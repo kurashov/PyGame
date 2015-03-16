@@ -3,6 +3,7 @@
 
 import pygame
 import random
+import math
 
 SIZE = 640, 480
 
@@ -40,6 +41,7 @@ class GameMode:
         '''What to do when entering this mode'''
         pass
 
+
 class Ball:
     '''Simple ball class'''
 
@@ -52,6 +54,7 @@ class Ball:
         self.pos = pos
         self.newpos = pos
         self.active = True
+        self.g = 2
 
     def draw(self, surface):
         surface.blit(self.surface, self.rect)
@@ -59,6 +62,9 @@ class Ball:
     def action(self):
         '''Proceed some action'''
         if self.active:
+            dx, dy = self.speed
+            dy += self.g
+            self.speed = dx, dy
             self.pos = self.pos[0]+self.speed[0], self.pos[1]+self.speed[1]
 
     def logic(self, surface):
@@ -77,7 +83,7 @@ class Ball:
             y = surface.get_height() - self.rect.height/2
             dy = -dy
         self.pos = x,y
-        self.speed = dx,dy
+        self.speed = dx, dy
         self.rect.center = intn(*self.pos)
 
 class Universe:
@@ -136,15 +142,15 @@ class GameWithDnD(GameWithObjects):
                 self.drag.active = False
                 self.oldpos = event.pos
         elif event.type == pygame.MOUSEMOTION and event.buttons[0]:
-                if self.drag:
-                    self.drag.pos = event.pos
-                    self.drag.speed = event.rel
+            if self.drag:
+                self.drag.pos = event.pos
+                self.drag.speed = event.rel
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if self.drag != None:
                 self.drag.active = True
             self.drag = None
         GameWithObjects.Events(self, event)
-
+        
 Init(SIZE)
 Game = Universe(50)
 
