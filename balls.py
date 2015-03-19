@@ -86,6 +86,24 @@ class Ball:
         self.speed = dx, dy
         self.rect.center = intn(*self.pos)
 
+class RotateBall (Ball) :
+
+    def __init__(self, filename, pos = (0.0, 0.0), speed = (0.0, 0.0)):
+        Ball.__init__(self, filename, pos, speed)
+        self.copy_surface = self.surface
+        self.angle = 0
+
+
+    def action(self):
+        Ball.action(self)
+        self.angle += 5
+        if self.angle > 360 :
+            self.angle -= 360
+        tmp = self.rect.center
+        self.surface = pygame.transform.rotate(self.copy_surface, self.angle)
+        self.rect = self.surface.get_rect()
+        self.rect.center = tmp
+
 class Universe:
     '''Game universe'''
 
@@ -155,10 +173,10 @@ Init(SIZE)
 Game = Universe(50)
 
 Run = GameWithDnD()
-for i in xrange(5):
+for i in xrange(1):
     x, y = random.randrange(screenrect.w), random.randrange(screenrect.h)
     dx, dy = 1+random.random()*5, 1+random.random()*5
-    Run.objects.append(Ball("ball.gif",(x,y),(dx,dy)))
+    Run.objects.append(RotateBall("ball.gif",(x,y),(dx,dy)))
 
 Game.Start()
 Run.Init()
