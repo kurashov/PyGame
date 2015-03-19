@@ -86,21 +86,24 @@ class Ball:
         self.speed = dx, dy
         self.rect.center = intn(*self.pos)
 
-class RotateBall (Ball) :
+class RotozoomBall (Ball) :
 
-    def __init__(self, filename, pos = (0.0, 0.0), speed = (0.0, 0.0)):
+    def __init__(self, filename, pos = (0.0, 0.0), speed = (0.0, 0.0), zoom = 1, angle_speed = 0):
         Ball.__init__(self, filename, pos, speed)
         self.copy_surface = self.surface
         self.angle = 0
+        self.angle_speed = angle_speed
+        self.zoom = zoom
 
 
     def action(self):
         Ball.action(self)
-        self.angle += 5
+        self.angle += self.angle_speed
         if self.angle > 360 :
             self.angle -= 360
         tmp = self.rect.center
-        self.surface = pygame.transform.rotate(self.copy_surface, self.angle)
+        #self.surface = pygame.transform.rotate(self.copy_surface, self.angle)
+        self.surface = pygame.transform.rotozoom(self.copy_surface, self.angle, self.zoom)
         self.rect = self.surface.get_rect()
         self.rect.center = tmp
 
@@ -173,10 +176,12 @@ Init(SIZE)
 Game = Universe(50)
 
 Run = GameWithDnD()
-for i in xrange(1):
+for i in xrange(5):
     x, y = random.randrange(screenrect.w), random.randrange(screenrect.h)
     dx, dy = 1+random.random()*5, 1+random.random()*5
-    Run.objects.append(RotateBall("ball.gif",(x,y),(dx,dy)))
+    zoom = 0.5 + random.random()
+    angle_speed = 2 + random.random()*10
+    Run.objects.append(RotozoomBall("ball.gif",(x,y),(dx,dy), zoom, angle_speed))
 
 Game.Start()
 Run.Init()
