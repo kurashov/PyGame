@@ -95,17 +95,16 @@ class RotozoomBall (Ball) :
         self.angle_speed = angle_speed
         self.zoom = zoom
 
-
     def action(self):
         Ball.action(self)
         self.angle += self.angle_speed
         if self.angle > 360 :
             self.angle -= 360
-        tmp = self.rect.center
+        #tmp = self.rect.center
         #self.surface = pygame.transform.rotate(self.copy_surface, self.angle)
         self.surface = pygame.transform.rotozoom(self.copy_surface, self.angle, self.zoom)
         self.rect = self.surface.get_rect()
-        self.rect.center = tmp
+        #self.rect.center = tmp
 
 class Universe:
     '''Game universe'''
@@ -123,6 +122,9 @@ class Universe:
         '''Shut down an universe'''
         pygame.time.set_timer(self.tickevent, 0)
 
+def distance(x, y) :
+    return math.sqrt(x[0]*y[0] + x[2]*y[2])
+
 class GameWithObjects(GameMode):
 
     def __init__(self, objects=[]):
@@ -138,10 +140,31 @@ class GameWithObjects(GameMode):
             for obj in self.objects:
                 obj.action()
 
-    def Logic(self, surface):
+    def Logic(self, surface): #TODO
         GameMode.Logic(self, surface)
-        for obj in self.objects:
-            obj.logic(surface)
+        for x in xrange (0, len(self.objects)) :
+            for y in xrange(x, len(self.objects)) :
+                obj1 = self.objects[x]
+                obj2 = self.objects[y]
+                if obj1 == obj2 :
+                    continue
+                mask1 = pygame.mask.from_surface(obj1.surface)
+                mask2 = pygame.mask.from_surface(obj2.surface)
+                xoffset = obj1.pos[0] - obj2.pos[0]
+                yoffset = obj1.pos[1] - obj2.pos[1]
+                offset = int(xoffset), int(yoffset)
+                if mask1.overlap(mask2, offset) != None:
+                    dx1, dy1 = obj1.speed
+                    dx2, dy2 = obj2.speed
+                    #obj1.speed = math.copysign(dx1, dx2), math.copysign(dy1, dy2)
+                    #obj2.speed = math.copysign(dx2, dx1), math.copysign(dy2, dy1)
+                    obj1.speed = -dx1, -dy1
+                    obj2.speed = -dx2, -dy2
+                    obj1.logic(surface)
+                    obj2.logic(surface)
+                    break;
+            else :
+                obj1.logic(surface)
 
     def Draw(self, surface):
         GameMode.Draw(self, surface)
@@ -176,7 +199,7 @@ Init(SIZE)
 Game = Universe(50)
 
 Run = GameWithDnD()
-for i in xrange(5):
+for i in xrange(2):
     x, y = random.randrange(screenrect.w), random.randrange(screenrect.h)
     dx, dy = 1+random.random()*5, 1+random.random()*5
     zoom = 0.5 + random.random()
